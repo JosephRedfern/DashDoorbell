@@ -17,6 +17,6 @@ Usage
 =====
 
 ```
-/DashDoorbell -twilio_sid=<TWILIO_SID> -twilio_token=<TWILIO_TOKEN> -to_number=<RECIPIENT_NUMBER> -from_number=<FROM_NUMBER> -dash_mac=<DASH_BUTTON_MAC> -min_interval 30
+./DashDoorbell -twilio_sid=<TWILIO_SID> -twilio_token=<TWILIO_TOKEN> -to_number=<RECIPIENT_NUMBER> -from_number=<FROM_NUMBER> -dash_mac=<DASH_BUTTON_MAC> -min_interval 30
 ```
 
