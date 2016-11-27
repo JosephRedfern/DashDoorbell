@@ -10,7 +10,7 @@ In the future, I'd like to send push notifications, perhaps have Webcam support,
 
 Building
 ========
-It should be as easy as cloning the repository, running `go get .` -- this will resolve the dependencies (gopacket and twiliogo).
+It should be as easy as cloning the repository, running `go get .` -- this will resolve the dependencies (gopacket and twiliogo) and compile the project.
 
 
 Usage
