@@ -16,10 +16,10 @@ import (
 
 var (
 	device       string = "en0"
-	snapshot_len int32  = 1024
+	snapshot_len int32  = 512
 	promiscuous  bool   = false
 	err          error
-	timeout      time.Duration = 30 * time.Second
+	timeout      time.Duration = 1 * time.Second
 	handle       *pcap.Handle
 )
 
@@ -28,6 +28,9 @@ var twilio_token = flag.String("twilio_token", os.Getenv("TWILIO_TOKEN"), "Twili
 var to_number = flag.String("to_number", os.Getenv("TO_NUMBER"), "Number to message")
 var from_number = flag.String("from_number", os.Getenv("FROM_NUMBER"), "Number to text from (as defined in Twilio)")
 var dash_mac = flag.String("dash_mac", os.Getenv("DASH_MAC"), "MAC Address of Amazon Dash button")
+var minimum_interval = flag.Int("min_interval", 10, "Minimum interval between button presses (seconds)")
+
+var last_pressed int64 = 0
 
 func main() {
 	flag.Parse()
@@ -72,8 +75,16 @@ func listen() {
 			arpPacket, _ := arpLayer.(*layers.ARP)
 			if bytes.Equal(arpPacket.SourceHwAddress, dashHwAddress) {
 				fmt.Printf("ARP request seen from %s\n", dashHwAddress)
-				//TODO: check if seen in last 5 seconds before triggering
-				go trigger()
+
+				difference := time.Now().Unix() - last_pressed
+
+				if difference >= int64(*minimum_interval) {
+					fmt.Printf("Difference was %d -- triggering\n", difference)
+					last_pressed = time.Now().Unix()
+					go trigger()
+				} else {
+					fmt.Printf("Difference was %d, too short -- not triggering\n", difference)
+				}
 			}
 		}
 	}
@@ -83,11 +94,13 @@ func trigger() {
 	fmt.Println("Triggered -- sending text message")
 
 	client := twilio.NewClient(*twilio_sid, *twilio_token)
-	message, err := twilio.NewMessage(client, *from_number, *to_number, twilio.Body("Dash button pressed!"))
+	body := fmt.Sprintf("Dash button pressed at %s", time.Now())
 
+	message, err := twilio.NewMessage(client, *from_number, *to_number, twilio.Body(body))
 	if err != nil {
 		fmt.Println(err)
 	} else {
 		fmt.Printf("Twilio Response: %s\n", message.Status)
 	}
+	fmt.Println()
 }
